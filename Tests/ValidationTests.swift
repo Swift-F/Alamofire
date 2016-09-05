@@ -26,8 +26,6 @@
 import Foundation
 import XCTest
 
-private let fileURL = URL(fileURLWithPath: FileManager.documentsDirectory + "/test_response.json")
-
 class StatusCodeValidationTestCase: BaseTestCase {
     func testThatValidationForRequestWithAcceptableStatusCodeResponseSucceeds() {
         // Given
@@ -47,12 +45,12 @@ class StatusCodeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(statusCode: 200..<300)
             .response { resp in
                 downloadError = resp.error
                 expectation2.fulfill()
-        }
+            }
 
         waitForExpectations(timeout: timeout, handler: nil)
 
@@ -79,7 +77,7 @@ class StatusCodeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(statusCode: [200])
             .response { resp in
                 downloadError = resp.error
@@ -120,7 +118,7 @@ class StatusCodeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(statusCode: [])
             .response { resp in
                 downloadError = resp.error
@@ -167,7 +165,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(contentType: ["application/json"])
             .validate(contentType: ["application/json;charset=utf8"])
             .validate(contentType: ["application/json;q=0.8;charset=utf8"])
@@ -203,7 +201,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(contentType: ["*/*"])
             .validate(contentType: ["application/*"])
             .validate(contentType: ["*/json"])
@@ -237,7 +235,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(contentType: ["application/octet-stream"])
             .response { resp in
                 downloadError = resp.error
@@ -279,7 +277,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(contentType: [])
             .response { resp in
                 downloadError = resp.error
@@ -321,7 +319,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(contentType: [])
             .response { resp in
                 downloadError = resp.error
@@ -356,8 +354,8 @@ class ContentTypeValidationTestCase: BaseTestCase {
             }
 
             override func download(
-                _ urlRequest: URLRequestConvertible,
-                to destination: DownloadRequest.DownloadFileDestination)
+                resource urlRequest: URLRequestConvertible,
+                to destination: DownloadRequest.DownloadFileDestination? = nil)
                 -> DownloadRequest
             {
                 let originalRequest = urlRequest.urlRequest
@@ -369,9 +367,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 let originalTask = DownloadRequest.Downloadable.request(originalRequest)
                 let request = MockDownloadRequest(session: session, task: task, originalTask: originalTask)
 
-                request.downloadDelegate.downloadTaskDidFinishDownloadingToURL = { session, task, URL in
-                    return destination(URL, task.response as! HTTPURLResponse)
-                }
+                request.downloadDelegate.destination = destination
 
                 delegate[request.delegate.task] = request
 
@@ -434,7 +430,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        manager.download(urlString, to: { _, _ in fileURL }, withMethod: .delete)
+        manager.download(urlString, method: .delete)
             .validate(contentType: ["*/*"])
             .response { resp in
                 downloadResponse = resp
@@ -452,7 +448,8 @@ class ContentTypeValidationTestCase: BaseTestCase {
         XCTAssertNil(requestResponse?.response?.mimeType)
 
         XCTAssertNotNil(downloadResponse?.response)
-        XCTAssertNotNil(downloadResponse?.destinationURL)
+        XCTAssertNotNil(downloadResponse?.temporaryURL)
+        XCTAssertNil(downloadResponse?.destinationURL)
         XCTAssertNil(downloadResponse?.error)
 
         XCTAssertEqual(downloadResponse?.response?.statusCode, 204)
@@ -482,7 +479,7 @@ class MultipleValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(statusCode: 200..<300)
             .validate(contentType: ["application/json"])
             .response { resp in
@@ -516,7 +513,7 @@ class MultipleValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(statusCode: 400..<600)
             .validate(contentType: ["application/octet-stream"])
             .response { resp in
@@ -559,7 +556,7 @@ class MultipleValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(contentType: ["application/octet-stream"])
             .validate(statusCode: 400..<600)
             .response { resp in
@@ -608,7 +605,7 @@ class AutomaticValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlRequest, to: { _, _ in fileURL })
+        Alamofire.download(resource: urlRequest)
             .validate()
             .response { resp in
                 downloadError = resp.error
@@ -640,7 +637,7 @@ class AutomaticValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate()
             .response { resp in
                 downloadError = resp.error
@@ -683,7 +680,7 @@ class AutomaticValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlRequest, to: { _, _ in fileURL })
+        Alamofire.download(resource: urlRequest)
             .validate()
             .response { resp in
                 downloadError = resp.error
@@ -719,7 +716,7 @@ class AutomaticValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlRequest, to: { _, _ in fileURL })
+        Alamofire.download(resource: urlRequest)
             .validate()
             .response { resp in
                 downloadError = resp.error
@@ -753,7 +750,7 @@ class AutomaticValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlRequest, to: { _, _ in fileURL })
+        Alamofire.download(resource: urlRequest)
             .validate()
             .response { resp in
                 downloadError = resp.error
@@ -799,11 +796,13 @@ extension DataRequest {
 
 extension DownloadRequest {
     func validateDataExists() -> Self {
-        return validate { request, response, fileURL in
-            guard let fileURL = fileURL else { return .failure(ValidationError.missingFile) }
+        return validate { request, response, temporaryURL, destinationURL in
+            let fileURL = self.downloadDelegate.destination != nil ? destinationURL : temporaryURL
+
+            guard let validFileURL = fileURL else { return .failure(ValidationError.missingFile) }
 
             do {
-                let _ = try Data(contentsOf: fileURL)
+                let _ = try Data(contentsOf: validFileURL)
                 return .success
             } catch {
                 return .failure(ValidationError.fileReadFailed)
@@ -812,7 +811,7 @@ extension DownloadRequest {
     }
 
     func validate(with error: Error) -> Self {
-        return validate { _, _, _ in .failure(error) }
+        return validate { _, _, _, _ in .failure(error) }
     }
 }
 
@@ -840,9 +839,9 @@ class CustomValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
-            .validate { request, response, fileURL in
-                guard let fileURL = fileURL else { return .failure(ValidationError.missingFile) }
+        Alamofire.download(urlString)
+            .validate { request, response, temporaryURL, destinationURL in
+                guard let fileURL = temporaryURL else { return .failure(ValidationError.missingFile) }
 
                 do {
                     let _ = try Data(contentsOf: fileURL)
@@ -882,9 +881,9 @@ class CustomValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
-            .validate { _, _, _ in .failure(ValidationError.missingFile) }
-            .validate { _, _, _ in .failure(ValidationError.fileReadFailed) } // should be ignored
+        Alamofire.download(urlString)
+            .validate { _, _, _, _ in .failure(ValidationError.missingFile) }
+            .validate { _, _, _, _ in .failure(ValidationError.fileReadFailed) } // should be ignored
             .response { resp in
                 downloadError = resp.error
                 expectation2.fulfill()
@@ -915,7 +914,7 @@ class CustomValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
         }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validateDataExists()
             .response { resp in
                 downloadError = resp.error
@@ -948,7 +947,7 @@ class CustomValidationTestCase: BaseTestCase {
                 expectation1.fulfill()
             }
 
-        Alamofire.download(urlString, to: { _, _ in fileURL }, withMethod: .get)
+        Alamofire.download(urlString)
             .validate(with: ValidationError.missingFile)
             .validate(with: ValidationError.fileReadFailed) // should be ignored
             .response { resp in
