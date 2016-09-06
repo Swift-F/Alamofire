@@ -38,7 +38,7 @@ class StatusCodeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(statusCode: 200..<300)
             .response { resp in
                 requestError = resp.error
@@ -70,7 +70,7 @@ class StatusCodeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(statusCode: [200])
             .response { resp in
                 requestError = resp.error
@@ -111,7 +111,7 @@ class StatusCodeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(statusCode: [])
             .response { resp in
                 requestError = resp.error
@@ -156,7 +156,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(contentType: ["application/json"])
             .validate(contentType: ["application/json;charset=utf8"])
             .validate(contentType: ["application/json;q=0.8;charset=utf8"])
@@ -192,7 +192,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(contentType: ["*/*"])
             .validate(contentType: ["application/*"])
             .validate(contentType: ["*/json"])
@@ -228,7 +228,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(contentType: ["application/octet-stream"])
             .response { resp in
                 requestError = resp.error
@@ -270,7 +270,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(contentType: [])
             .response { resp in
                 requestError = resp.error
@@ -312,7 +312,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(contentType: [])
             .response { resp in
                 requestError = resp.error
@@ -336,7 +336,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
     func testThatValidationForRequestWithAcceptableWildcardContentTypeResponseSucceedsWhenResponseIsNil() {
         // Given
         class MockManager: SessionManager {
-            override func request(_ urlRequest: URLRequestConvertible) -> DataRequest {
+            override func request(resource urlRequest: URLRequestConvertible) -> DataRequest {
                 let originalRequest = urlRequest.urlRequest
                 let adaptedRequest = originalRequest.adapt(using: adapter)
 
@@ -423,7 +423,7 @@ class ContentTypeValidationTestCase: BaseTestCase {
         var downloadResponse: DefaultDownloadResponse?
 
         // When
-        manager.request(urlString, withMethod: .delete)
+        manager.request(urlString, method: .delete)
             .validate(contentType: ["*/*"])
             .response { resp in
                 requestResponse = resp
@@ -471,7 +471,7 @@ class MultipleValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(statusCode: 200..<300)
             .validate(contentType: ["application/json"])
             .response { resp in
@@ -505,7 +505,7 @@ class MultipleValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(statusCode: 400..<600)
             .validate(contentType: ["application/octet-stream"])
             .response { resp in
@@ -548,7 +548,7 @@ class MultipleValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(contentType: ["application/octet-stream"])
             .validate(statusCode: 400..<600)
             .response { resp in
@@ -598,7 +598,7 @@ class AutomaticValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlRequest)
+        Alamofire.request(resource: urlRequest)
             .validate()
             .response { resp in
                 requestError = resp.error
@@ -630,7 +630,7 @@ class AutomaticValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate()
             .response { resp in
                 requestError = resp.error
@@ -673,7 +673,7 @@ class AutomaticValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlRequest)
+        Alamofire.request(resource: urlRequest)
             .validate()
             .response { resp in
                 requestError = resp.error
@@ -709,7 +709,7 @@ class AutomaticValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlRequest)
+        Alamofire.request(resource: urlRequest)
             .validate()
             .response { resp in
                 requestError = resp.error
@@ -743,7 +743,7 @@ class AutomaticValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlRequest)
+        Alamofire.request(resource: urlRequest)
             .validate()
             .response { resp in
                 requestError = resp.error
@@ -829,7 +829,7 @@ class CustomValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate { request, response, data in
                 guard data != nil else { return .failure(ValidationError.missingData) }
                 return .success
@@ -873,7 +873,7 @@ class CustomValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate { _, _, _ in .failure(ValidationError.missingData) }
             .validate { _, _, _ in .failure(ValidationError.missingFile) } // should be ignored
             .response { resp in
@@ -907,7 +907,7 @@ class CustomValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validateDataExists()
             .response { resp in
                 requestError = resp.error
@@ -939,7 +939,7 @@ class CustomValidationTestCase: BaseTestCase {
         var downloadError: Error?
 
         // When
-        Alamofire.request(urlString, withMethod: .get)
+        Alamofire.request(urlString)
             .validate(with: ValidationError.missingData)
             .validate(with: ValidationError.missingFile) // should be ignored
             .response { resp in
